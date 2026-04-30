@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>sniffster | Passive Network Inventory Sniffer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="sniffster is a passive network inventory sniffer built around XDP, libbpf, and C++26 • named modules."
+  >
+  <link rel="stylesheet" href="styles.css">
+    <script data-goatcounter="https://peter-als.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js" async></script>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="https://github.com/peter-als/sniffster">
+        <span class="brand-mark"></span>
+        <span>sniffster</span>
+      </a>
+      <nav class="nav">
+        <a href="#what-it-does">What it does</a>
+        <a href="#design">Design</a>
+        <a href="#story">Why I built it</a>
+        <a href="#tech">Tech</a>
+        <a href="#quick-start">Quick start</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">XDP • libbpf • C++26 • named modules</div>
+        <h1>sniffster</h1>
+        <p class="tagline">
+          A passive network inventory sniffer that watches live traffic, extracts compact metadata,
+          and logs findings for later inventory analysis without trying to become a full IDS.
+        </p>
+        <p class="hero-copy">
+          The current implementation is built around XDP and libbpf, with an intentionally simple,
+          low-overhead runtime. Similar packet observations are coalesced early so downstream code
+          sees less repetition and the tool stays cheap enough to run on a normal development box.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/peter-als/sniffster">View on GitHub</a>
+          <a class="button secondary" href="https://github.com/peter-als/sniffster/blob/main/README.md">Read the README</a>
+        </div>
+        <div class="hero-grid">
+          <div class="hero-card">
+            <strong>Passive by design</strong>
+            <span>XDP observes traffic without taking packets away from the host stack.</span>
+          </div>
+          <div class="hero-card">
+            <strong>Early coalescing</strong>
+            <span>Repeated observations are trimmed near the capture path, not after the fact.</span>
+          </div>
+          <div class="hero-card">
+            <strong>Runtime discipline</strong>
+            <span>Fixed topology, explicit ownership, and low-friction queue coordination.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="sections">
+        <section class="panel" id="what-it-does">
+          <h2>What it does</h2>
+          <p>
+            <code>sniffster</code> observes live traffic, extracts just the metadata it cares about,
+            and turns that into an inventory-oriented stream of logged events. The goal is not deep
+            packet analytics or full intrusion detection, and it is not to assemble the final
+            network picture online. The goal is to capture useful findings efficiently so that the
+            observed subnet can be analyzed offline afterward.
+          </p>
+          <p>
+            That is why the runtime coalesces similar packet observations early. This is not only a
+            performance trick. For inventory-style sniffing, it is often more useful to reduce
+            repetition near the capture path than to move a large volume of near-duplicate events
+            through the rest of the system.
+          </p>
+        </section>
+
+        <section class="panel" id="design">
+          <h2>Design direction</h2>
+          <ul class="notes">
+            <li>
+              <strong>Low-overhead capture path</strong>
+              <span>The project is built around XDP, libbpf perf buffers, and compact packet metadata.</span>
+            </li>
+            <li>
+              <strong>Explicit runtime contracts</strong>
+              <span>Queue safety comes from deterministic startup and shutdown ordering, not shared ownership machinery.</span>
+            </li>
+            <li>
+              <strong>Current focus</strong>
+              <span>Internal API cleanup, profiling, and broader end-to-end validation are the main next steps.</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel" id="story">
+          <h2>Why I built it</h2>
+          <p>
+            This started as an independent implementation effort after some adjacent
+            network-observability work left me thinking that the same kind of tool could
+            be made leaner and faster.
+          </p>
+          <p>
+            Part of the fun here is that it pulls me back toward the sort of performance-minded
+            engineering I used to enjoy in HFT: explicit ownership, tight layouts, predictable
+            runtime behavior, and as little unnecessary machinery in the hot path as possible.
+          </p>
+          <p>
+            It is also why the current version leans so hard into early coalescing and a cheap
+            runtime footprint. The goal is not just correctness; it is to keep the tool light
+            enough that it can sit on a normal development box without becoming its own problem.
+          </p>
+        </section>
+
+        <section class="panel" id="tech">
+          <h2>Tech</h2>
+          <ul class="stack">
+            <li>
+              <strong>C++26 • named modules</strong>
+              <span>Core source is organized under <code>network/</code>, <code>sniffer/</code>, and <code>processors/</code>.</span>
+            </li>
+            <li>
+              <strong>XDP and libbpf</strong>
+              <span>Packet observation and userspace event delivery.</span>
+            </li>
+            <li>
+              <strong>CMake, Ninja, Boost, CLI11</strong>
+              <span>Build system, queueing utilities, and command-line plumbing.</span>
+            </li>
+            <li>
+              <strong>Linux-first runtime</strong>
+              <span>The current implementation targets a Linux environment with modern compiler support.</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel">
+          <h2>Current status</h2>
+          <p>
+            This is an actively developed implementation. The XDP/libbpf path is already
+            in place, the runtime is covered by a growing automated test suite, and the
+            design direction is intentionally performance-minded.
+          </p>
+          <p>
+            Future work includes deeper profiling, more polish around internal APIs, and a possible
+            DPDK-based path for SPAN or mirrored traffic.
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2>Personal notes</h2>
+          <ul class="notes">
+            <li>
+              <strong>Allocation discipline</strong>
+              <span>The project intentionally avoids heap-managed ownership in the hot path and prefers explicit lifetime rules where that keeps the runtime simpler.</span>
+            </li>
+            <li>
+              <strong>Test coverage</strong>
+              <span>The automated tests cover core runtime coordination, malformed input handling, coalescing behavior, and queue overflow scenarios, with room to broaden end-to-end validation further.</span>
+            </li>
+            <li>
+              <strong>Future direction</strong>
+              <span>A DPDK-based path for SPAN or mirrored traffic is one of the obvious experiments once the current XDP path has been profiled more thoroughly.</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel" id="quick-start" style="grid-column: 1 / -1;">
+          <h2>Quick start</h2>
+          <pre><code>git clone https://github.com/peter-als/sniffster
+cd sniffster
+
+make debug
+make test-debug</code></pre>
+        </section>
+      </div>
+
+      <div class="footer">
+        Source, build notes, and implementation details live in the main repository.
+        The README is the best place to continue if you want the fuller architecture story.
+      </div>
+    </main>
+  </div>
+</body>
+</html>
