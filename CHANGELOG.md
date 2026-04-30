@@ -32,4 +32,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Automated test suite** — 105 tests covering the capture, coalescing, processing,
   and logging layers; passing under `debug` and `release` presets.
 
-[0.1.0]: https://github.com/peterals/sniffspector/releases/tag/v0.1.0
+[0.1.0]: https://github.com/peterals/sniffster/releases/tag/v0.1.0

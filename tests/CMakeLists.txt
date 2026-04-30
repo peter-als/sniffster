@@ -40,7 +40,6 @@ target_sources(network_misc_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -65,7 +64,6 @@ target_sources(platform_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -105,7 +103,6 @@ target_sources(manual_network_config
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
         ${CMAKE_SOURCE_DIR}/network/addresses.cppm
@@ -125,29 +122,6 @@ target_sources(manual_demo_decorated_errors
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
 )
 
-add_executable(clock_tests
-    clock_test.cppm
-)
-
-target_sources(clock_tests
-    PRIVATE
-    FILE_SET CXX_MODULES
-    BASE_DIRS ${CMAKE_SOURCE_DIR}
-    FILES
-        ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
-        ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
-        ${CMAKE_SOURCE_DIR}/platform/debug.cppm
-        ${CMAKE_SOURCE_DIR}/platform/platform.cppm
-)
-
-set_source_files_properties(clock_test.cppm PROPERTIES LANGUAGE CXX)
-
-target_link_libraries(clock_tests PRIVATE
-    GTest::gtest_main
-)
-
-gtest_discover_tests(clock_tests DISCOVERY_MODE PRE_TEST)
 
 add_executable(packet_print_tests
     packet_print_test.cpp
@@ -159,7 +133,6 @@ target_sources(packet_print_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -203,7 +176,6 @@ target_sources(logger_processor_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -252,7 +224,6 @@ target_sources(queue_processor_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -276,7 +247,6 @@ target_sources(packet_processor_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -332,7 +302,6 @@ target_sources(xdp_copy_mode_loader_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -358,7 +327,6 @@ target_sources(sniffer_runtime_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm
@@ -412,7 +380,6 @@ target_sources(packet_handler_tests
     BASE_DIRS ${CMAKE_SOURCE_DIR}
     FILES
         ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
-        ${CMAKE_SOURCE_DIR}/platform/clock.cppm
         ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
         ${CMAKE_SOURCE_DIR}/platform/debug.cppm
         ${CMAKE_SOURCE_DIR}/platform/platform.cppm

@@ -1,10 +1,10 @@
-import sniffster.network.config;
-import sniffster.processors.format_data;
-
 #include <cstdlib>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <print>
+
+import sniffster.network.config;
+import sniffster.processors.format_data;
 
 void print_flags(unsigned flags)
 {

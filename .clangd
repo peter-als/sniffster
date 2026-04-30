@@ -1,0 +1,27 @@
+CompileFlags:
+  CompilationDatabase: build/debug
+  Compiler: clang++-22
+  Add:
+    - -std=c++26
+    - -march=native
+    - -O2
+    - -DNDEBUG
+---
+If:
+  PathMatch: .*\.c
+CompileFlags:
+  Compiler: clang-22
+  Remove:
+    - -march=native
+    - -std=c++26
+    - -x
+    - c++
+    - --driver-mode=g++
+    - -fmodule-output=*
+    - -fmodule-file=*
+  Add:
+    - -xc
+    - -std=gnu11
+    - -target
+    - bpf
+    - -I/usr/include/x86_64-linux-gnu

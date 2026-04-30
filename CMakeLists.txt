@@ -185,7 +185,6 @@ target_sources(sniffster
 PRIVATE
 FILE_SET CXX_MODULES FILES
     platform/arch_detect.cppm
-    platform/clock.cppm
     platform/decorated_throw.cppm
     platform/debug.cppm
     platform/platform.cppm

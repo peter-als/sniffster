@@ -14,7 +14,6 @@ module;
 export module sniffster.platform;
 import sniffster.platform.decorated_throw;
 export import :arch_detect;
-export import :clock;
 
 export namespace platform {
 
