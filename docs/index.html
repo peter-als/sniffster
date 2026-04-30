@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>sniffster | Passive Network Inventory Sniffer</title>
+  <title>sniffster | Observing-Only Network Traffic Sniffer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta
     name="description"
-    content="sniffster is a passive network inventory sniffer built around XDP, libbpf, and C++26 • named modules."
+    content="sniffster is an observing-only network traffic sniffer built around XDP, libbpf, and C++26 • named modules."
   >
   <link rel="stylesheet" href="styles.css">
     <script data-goatcounter="https://peter-als.goatcounter.com/count"
@@ -33,8 +33,8 @@
         <div class="eyebrow">XDP • libbpf • C++26 • named modules</div>
         <h1>sniffster</h1>
         <p class="tagline">
-          A passive network inventory sniffer that watches live traffic, extracts compact metadata,
-          and logs findings for later inventory analysis without trying to become a full IDS.
+          An observing-only network traffic sniffer that watches live traffic, extracts compact
+          metadata, and logs those observations without trying to become a full IDS.
         </p>
         <p class="hero-copy">
           The current implementation is built around XDP and libbpf, with an intentionally simple,
@@ -47,7 +47,7 @@
         </div>
         <div class="hero-grid">
           <div class="hero-card">
-            <strong>Passive by design</strong>
+            <strong>Observing only</strong>
             <span>XDP observes traffic without taking packets away from the host stack.</span>
           </div>
           <div class="hero-card">
@@ -66,14 +66,14 @@
           <h2>What it does</h2>
           <p>
             <code>sniffster</code> observes live traffic, extracts just the metadata it cares about,
-            and turns that into an inventory-oriented stream of logged events. The goal is not deep
-            packet analytics or full intrusion detection, and it is not to assemble the final
-            network picture online. The goal is to capture useful findings efficiently so that the
-            observed subnet can be analyzed offline afterward.
+            and turns that into a compact stream of logged events. The goal is not deep packet
+            analytics or full intrusion detection, and it is not to assemble the final network
+            picture online. The goal is to capture useful observations efficiently so they can be
+            reviewed and processed later.
           </p>
           <p>
             That is why the runtime coalesces similar packet observations early. This is not only a
-            performance trick. For inventory-style sniffing, it is often more useful to reduce
+            performance trick. For a logging-first tool, it is often more useful to reduce
             repetition near the capture path than to move a large volume of near-duplicate events
             through the rest of the system.
           </p>

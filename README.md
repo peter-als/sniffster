@@ -1,8 +1,8 @@
 # sniffster
 
-`sniffster` is a passive network inventory sniffer built around XDP, libbpf, and C++26 • named modules.
+`sniffster` is an observing-only network traffic sniffer built around XDP, libbpf, and C++26 • named modules.
 
-It observes live traffic, extracts compact metadata, and logs inventory-oriented findings while keeping the runtime intentionally lightweight.
+It observes live traffic, extracts compact metadata, and logs those observations while keeping the runtime intentionally lightweight.
 
 ## Goals
 
@@ -18,7 +18,7 @@ At a high level, the runtime looks like this:
 - an XDP program observes packets and emits compact metadata into a perf event array
 - userspace receives those samples through libbpf perf buffers
 - handler threads decode and coalesce events before pushing them downstream
-- processor threads consume the reduced event stream for inventory-oriented reporting and logging
+- processor threads consume the reduced event stream for reporting and logging
 
 The packet metadata layout is intentionally split in two parts. `packet_identity_t` contains only the bytes that define "same network observation" for coalescing, while `packet_meta_event` embeds that identity object as its first field and appends timestamps and runtime metadata after it. That identity boundary is guarded with `static_assert`s on size, alignment, and field offsets.
 
