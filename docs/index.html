@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta
     name="description"
-    content="sniffster is an observing-only network traffic sniffer built around XDP, libbpf, and C++26 • named modules."
+    content="sniffster is an observing-only network traffic sniffer built around XDP/BPF (libbpf), and C++26 • named modules."
   >
   <link rel="stylesheet" href="styles.css">
     <script data-goatcounter="https://peter-als.goatcounter.com/count"
@@ -30,14 +30,14 @@
 
     <main>
       <section class="hero">
-        <div class="eyebrow">XDP • libbpf • C++26 • named modules</div>
+        <div class="eyebrow">XDP • BPF • C++26 • named modules</div>
         <h1>sniffster</h1>
         <p class="tagline">
           An observing-only network traffic sniffer that watches live traffic, extracts compact
           metadata, and logs those observations without trying to become a full IDS.
         </p>
         <p class="hero-copy">
-          The current implementation is built around XDP and libbpf, with an intentionally simple,
+          The current implementation is built around XDP (libbpf), with an intentionally simple,
           low-overhead runtime. Similar packet observations are coalesced early so downstream code
           sees less repetition and the tool stays cheap enough to run on a normal development box.
         </p>
