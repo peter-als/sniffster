@@ -125,6 +125,8 @@ set(SNIFFSTER_CXX_STDLIB "" CACHE STRING
 set_property(CACHE SNIFFSTER_CXX_STDLIB PROPERTY STRINGS "" "libstdc++" "libc++")
 set(SNIFFSTER_GCC_INSTALL_DIR "" CACHE PATH
     "Exact GCC install dir to pair with Clang, e.g. /usr/lib/gcc/x86_64-linux-gnu/14")
+set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
+    "Preferred Boost installation prefix when selecting a non-default Boost build")
 
 set(SNIFFSTER_STDLIB_COMPILE_OPTIONS "")
 set(SNIFFSTER_STDLIB_LINK_OPTIONS "")
@@ -194,32 +196,15 @@ if(SNIFFSTER_GCC_INSTALL_DIR)
     endif()
 endif()
 
-# set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
-#     "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++.")
-# option(SNIFFSTER_BOOST_NO_SYSTEM_PATHS
-#     "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" OFF)
-#
-# if(SNIFFSTER_BOOST_ROOT
-#    AND EXISTS "${SNIFFSTER_BOOST_ROOT}/boost/version.hpp"
-#    AND EXISTS "${SNIFFSTER_BOOST_ROOT}/stage/lib"
-#    AND NOT EXISTS "${SNIFFSTER_BOOST_ROOT}/include/boost/version.hpp")
-#     set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
-#         "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++." FORCE)
-#     set(SNIFFSTER_BOOST_NO_SYSTEM_PATHS OFF CACHE BOOL
-#         "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" FORCE)
-# endif()
-#
-# if(NOT SNIFFSTER_BOOST_ROOT AND SNIFFSTER_STDLIB_BOOST_CANDIDATES)
-#     foreach(_sniffster_boost_candidate IN LISTS SNIFFSTER_STDLIB_BOOST_CANDIDATES)
-#         if(EXISTS "${_sniffster_boost_candidate}/include/boost/version.hpp")
-#             set(SNIFFSTER_BOOST_ROOT "${_sniffster_boost_candidate}" CACHE PATH
-#                 "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++." FORCE)
-#             set(SNIFFSTER_BOOST_NO_SYSTEM_PATHS ON CACHE BOOL
-#                 "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" FORCE)
-#             break()
-#         endif()
-#     endforeach()
-# endif()
+if(SNIFFSTER_BOOST_ROOT)
+    set(Boost_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
+        "Boost root directory selected by sniffster" FORCE)
+    set(BOOST_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
+        "Boost root directory selected by sniffster" FORCE)
+    set(Boost_NO_SYSTEM_PATHS ON CACHE BOOL
+        "Restrict Boost discovery to the selected sniffster Boost root" FORCE)
+endif()
+
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     add_compile_options(-march=x86-64-v2)
@@ -355,32 +340,6 @@ pkg_check_modules(LIBBPF REQUIRED libbpf)
 pkg_check_modules(LIBELF REQUIRED libelf)
 pkg_check_modules(ZLIB REQUIRED zlib)
 
-# if(SNIFFSTER_BOOST_ROOT)
-#     set(BOOST_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
-#         "Boost root directory" FORCE)
-#     set(Boost_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
-#         "Boost root directory" FORCE)
-#
-#     if(EXISTS "${SNIFFSTER_BOOST_ROOT}/include/boost/version.hpp")
-#         set(BOOST_INCLUDEDIR "${SNIFFSTER_BOOST_ROOT}/include" CACHE PATH
-#             "Boost include directory" FORCE)
-#         set(Boost_INCLUDE_DIR "${SNIFFSTER_BOOST_ROOT}/include" CACHE PATH
-#             "Boost include directory" FORCE)
-#     endif()
-#
-#     if(EXISTS "${SNIFFSTER_BOOST_ROOT}/lib")
-#         set(BOOST_LIBRARYDIR "${SNIFFSTER_BOOST_ROOT}/lib" CACHE PATH
-#             "Boost library directory" FORCE)
-#         set(Boost_LIBRARY_DIR "${SNIFFSTER_BOOST_ROOT}/lib" CACHE PATH
-#             "Boost library directory" FORCE)
-#     endif()
-# endif()
-#
-# if(SNIFFSTER_BOOST_NO_SYSTEM_PATHS)
-#     set(Boost_NO_SYSTEM_PATHS ON)
-# endif()
-#
-# set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost REQUIRED COMPONENTS program_options filesystem log log_setup)
 

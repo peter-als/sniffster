@@ -12,21 +12,12 @@
       "generator": "Ninja",
       "cacheVariables": {
 
-        "______SELECT_VERSIONS_START_______": "",
-
-        "__CMAKE_C_COMPILER": "/usr/bin/clang-22",
-        "__CMAKE_CXX_COMPILER": "/usr/bin/clang++-22",
-        "__CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "/usr/bin/clang-scan-deps-22",
-        "__SNIFFSTER_CXX_STDLIB": "libstdc++",
-        "__SNIFFSTER_GCC_INSTALL_DIR": "/usr/lib/gcc/x86_64-linux-gnu/14",
-
         "CMAKE_C_COMPILER": "/usr/bin/clang-22",
         "CMAKE_CXX_COMPILER": "/usr/bin/clang++-22",
         "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "/usr/bin/clang-scan-deps-22",
         "SNIFFSTER_CXX_STDLIB": "libstdc++",
         "SNIFFSTER_GCC_INSTALL_DIR": "/usr/lib/gcc/x86_64-linux-gnu/14",
-
-        "_______SELECT_VERSIONS_END________": "",
+        "_SNIFFSTER_BOOST_ROOT": "using default boost",
 
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_CXX_STANDARD": "26",

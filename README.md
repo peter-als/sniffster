@@ -50,14 +50,48 @@ The repository is currently configured around this build setup:
 
 - **CMake** - 3.28+ required
 - **Generator** - Ninja via the checked-in CMake presets
-- **Compiler presets** - `/usr/bin/clang-22`, `/usr/bin/clang++-22`, and `/usr/bin/clang-scan-deps-22`
+- **Compiler presets** - controlled through `CMakePresets.json`
 - **C++ language level** - C++26, with extensions disabled
-- **Standard library default** - `libc++` via `SNIFFSTER_CXX_STDLIB=libc++`
-- **Current libc++ extra flag** - `-fexperimental-library` is enabled for the repo's libc++ flow
+- **Standard library selection** - controlled through `SNIFFSTER_CXX_STDLIB`
 - **Compile database** - `CMAKE_EXPORT_COMPILE_COMMANDS=ON`
 - **Build presets** - `debug`, `release`, and `sanitized`
 
-The current build also assumes host-installed `libbpf`, `bpftool`, and a `libc++`-compatible Boost installation discoverable by CMake. The project already fetches CLI11 and GoogleTest, but not Boost or libc++.
+The current build assumes host-installed `libbpf`, `bpftool`, Boost, and whichever C++ standard library the selected toolchain uses. The project already fetches CLI11 and GoogleTest, but not Boost or the C++ standard library.
+
+## Toolchain Customization
+
+The checked-in presets use `configurePresets.base.cacheVariables` in [CMakePresets.json](CMakePresets.json) as the single place to customize the toolchain.
+
+The real variables are:
+
+- `CMAKE_C_COMPILER` - C compiler binary, for example `/usr/bin/clang-22`
+- `CMAKE_CXX_COMPILER` - C++ compiler binary, for example `/usr/bin/clang++-22`
+- `CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS` - matching `clang-scan-deps` binary when using Clang modules
+- `CMAKE_CXX_STANDARD` - language level such as `23` or `26`
+- `SNIFFSTER_CXX_STDLIB` - standard library choice: empty, `libstdc++`, or `libc++`
+- `SNIFFSTER_GCC_INSTALL_DIR` - exact GCC install directory to pair with Clang when selecting `libstdc++`, for example `/usr/lib/gcc/x86_64-linux-gnu/14`
+- `SNIFFSTER_BOOST_ROOT` - Boost installation prefix when you want a non-default Boost build
+
+Typical combinations:
+
+- Clang 22 + `libstdc++` 14:
+  `CMAKE_CXX_COMPILER=/usr/bin/clang++-22`, `SNIFFSTER_CXX_STDLIB=libstdc++`, `SNIFFSTER_GCC_INSTALL_DIR=/usr/lib/gcc/x86_64-linux-gnu/14`
+- Clang + `libc++`:
+  `CMAKE_CXX_COMPILER=/usr/bin/clang++-22`, `SNIFFSTER_CXX_STDLIB=libc++`
+- Non-default Boost:
+  `SNIFFSTER_BOOST_ROOT=/path/to/boost-prefix`
+
+`SNIFFSTER_BOOST_ROOT` must point to a real Boost prefix, typically containing both:
+
+- `<prefix>/include/boost/version.hpp`
+- `<prefix>/lib/libboost_log.so` or equivalent Boost libraries
+
+If you change compiler, standard library, GCC install dir, or Boost root, clear the build tree first so CMake does not reuse stale cache entries:
+
+```sh
+make clean
+make debug
+```
 
 ## Usage
 

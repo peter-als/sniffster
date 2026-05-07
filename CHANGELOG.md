@@ -8,6 +8,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Toolchain inventory script** — added `scripts/toolchain_inventory.sh` to
+  inspect available compilers, Clang tooling, Boost, `libc++`, and
+  `libstdc++`, including capability probes for C++23, C++26, and `<print>`.
+- **Preset-level toolchain knobs** — documented and wired support for selecting
+  compiler binaries, `clang-scan-deps`, language level, standard library,
+  exact GCC install dir for Clang + `libstdc++`, and a non-default Boost
+  prefix from `CMakePresets.json`.
+- **README toolchain customization guide** — documented the real cache
+  variables used to customize the build and the expected shape of a valid
+  non-default Boost install prefix.
+
+### Changed
+
+- **Standard library selection** — restored `SNIFFSTER_CXX_STDLIB` as the
+  single repo-level switch for `libstdc++` vs `libc++`, including the
+  corresponding compile, link, and feature-probe flags.
+- **Clang + GNU stdlib pairing** — added `SNIFFSTER_GCC_INSTALL_DIR` so Clang
+  builds can be pinned to a specific GCC/libstdc++ install such as
+  `/usr/lib/gcc/x86_64-linux-gnu/14`.
+- **Boost selection** — added `SNIFFSTER_BOOST_ROOT` and forward it to
+  `Boost_ROOT` / `BOOST_ROOT` so a non-default Boost install can be selected
+  without reviving the earlier path-guessing logic.
+
+### Fixed
+
+- **Toolchain inventory coverage** — taught the inventory script to report GCC
+  install directories such as `/usr/lib/gcc/x86_64-linux-gnu/14` instead of
+  only broad library roots.
+- **Toolchain diagnostics** — clarified that a bad `clang-scan-deps` path can
+  make CMake report a misleading `<print>` failure even when the selected
+  compiler and standard library actually support it.
+
 ## [0.0.1] - 2026-04-29
 
 ### Added
