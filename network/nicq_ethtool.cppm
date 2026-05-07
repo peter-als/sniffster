@@ -8,6 +8,7 @@ module;
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
 #include <unistd.h>
+#include <cstdint>
 
 export module sniffster.network.nicq_ethtool;
 

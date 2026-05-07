@@ -1,0 +1,285 @@
+toolchain_inventory.sh
+Scanned 14 binary dirs, 2 include dirs, 6 library dirs.
+
+== C and C++ Compilers ==
+
+  - /usr/bin/clang++
+  origin             PATH
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+  supports c++23     yes
+  supports c++26     yes
+  <print> c++23      yes
+  <print> c++26      yes
+  libstdc++ flag     yes
+  libc++ flag        yes
+  <print> libstdc++  yes
+  <print> libc++     yes
+
+  - /usr/bin/clang++-18
+  origin             PATH
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+  supports c++23     yes
+  supports c++26     yes
+  <print> c++23      yes
+  <print> c++26      yes
+  libstdc++ flag     yes
+  libc++ flag        yes
+  <print> libstdc++  yes
+  <print> libc++     yes
+
+  - /usr/bin/clang++-22
+  origin             PATH
+  version            Ubuntu clang version 22.1.3 (++20260402073256+4250a0fc5de9-1~exp1~20260402073413.57)
+  supports c++23     yes
+  supports c++26     yes
+  <print> c++23      yes
+  <print> c++26      yes
+  libstdc++ flag     yes
+  libc++ flag        yes
+  <print> libstdc++  yes
+  <print> libc++     yes
+
+  - /usr/bin/g++
+  origin             PATH
+  version            g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+  supports c++23     yes
+  supports c++26     no
+  <print> c++23      no
+  <print> c++26      no
+
+  - /usr/bin/g++-13
+  origin             PATH
+  version            g++-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+  supports c++23     yes
+  supports c++26     no
+  <print> c++23      no
+  <print> c++26      no
+
+  - /usr/bin/clang
+  origin             PATH
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+
+  - /usr/bin/clang-18
+  origin             PATH
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+
+  - /usr/bin/clang-22
+  origin             PATH
+  version            Ubuntu clang version 22.1.3 (++20260402073256+4250a0fc5de9-1~exp1~20260402073413.57)
+
+  - /usr/bin/gcc
+  origin             PATH
+  version            gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+
+  - /usr/bin/gcc-13
+  origin             PATH
+  version            gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+
+  - /usr/lib/llvm-18/bin/clang++
+  origin             standard
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+  supports c++23     yes
+  supports c++26     yes
+  <print> c++23      yes
+  <print> c++26      yes
+  libstdc++ flag     yes
+  libc++ flag        yes
+  <print> libstdc++  yes
+  <print> libc++     yes
+
+  - /usr/lib/llvm-18/bin/clang
+  origin             standard
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+
+  - /usr/lib/llvm-18/bin/clang-18
+  origin             standard
+  version            Ubuntu clang version 18.1.3 (1ubuntu1)
+
+  - /usr/lib/llvm-22/bin/clang++
+  origin             standard
+  version            Ubuntu clang version 22.1.3 (++20260402073256+4250a0fc5de9-1~exp1~20260402073413.57)
+  supports c++23     yes
+  supports c++26     yes
+  <print> c++23      yes
+  <print> c++26      yes
+  libstdc++ flag     yes
+  libc++ flag        yes
+  <print> libstdc++  yes
+  <print> libc++     yes
+
+  - /usr/lib/llvm-22/bin/clang
+  origin             standard
+  version            Ubuntu clang version 22.1.3 (++20260402073256+4250a0fc5de9-1~exp1~20260402073413.57)
+
+  - /usr/lib/llvm-22/bin/clang-22
+  origin             standard
+  version            Ubuntu clang version 22.1.3 (++20260402073256+4250a0fc5de9-1~exp1~20260402073413.57)
+
+== CMake ==
+  - /usr/bin/cmake
+  origin             PATH
+  version            cmake version 4.3.2
+
+== clang-tidy ==
+  - /usr/bin/clang-tidy
+  origin             PATH
+  version            Ubuntu LLVM version 18.1.3
+  - /usr/bin/clang-tidy-18
+  origin             PATH
+  version            Ubuntu LLVM version 18.1.3
+  - /usr/lib/llvm-18/bin/clang-tidy
+  origin             standard
+  version            Ubuntu LLVM version 18.1.3
+
+== clang-format ==
+  - /usr/bin/clang-format
+  origin             PATH
+  version            Ubuntu clang-format version 18.1.3 (1ubuntu1)
+  - /usr/bin/clang-format-18
+  origin             PATH
+  version            Ubuntu clang-format version 18.1.3 (1ubuntu1)
+  - /usr/lib/llvm-18/bin/clang-format
+  origin             standard
+  version            Ubuntu clang-format version 18.1.3 (1ubuntu1)
+
+== clang-scan-deps ==
+  - /usr/bin/clang-scan-deps-18
+  origin             PATH
+  version            /usr/bin/clang-scan-deps-18
+  - /usr/bin/clang-scan-deps-22
+  origin             PATH
+  version            /usr/bin/clang-scan-deps-22
+  - /usr/lib/llvm-18/bin/clang-scan-deps
+  origin             standard
+  version            /usr/lib/llvm-18/bin/clang-scan-deps
+  - /usr/lib/llvm-22/bin/clang-scan-deps
+  origin             standard
+  version            /usr/lib/llvm-22/bin/clang-scan-deps
+
+== cmake-format ==
+  none found
+
+== GCC Install Dirs ==
+  - /usr/lib/gcc/x86_64-linux-gnu/13
+  - /usr/lib/gcc/x86_64-linux-gnu/14
+
+== libc++ Headers ==
+  - /usr/include/c++/v1
+  has <print>        yes
+
+== libstdc++ Headers ==
+  - /usr/include/c++/13
+  has <print>        no
+  - /usr/include/c++/14
+  has <print>        yes
+
+== libc++ Libraries ==
+  - /usr/lib/llvm-18/lib/libc++.so
+  - /usr/lib/llvm-18/lib/libc++.so.1.0
+  - /usr/lib/llvm-18/lib/libc++.a
+
+== libc++abi Libraries ==
+  - /usr/lib/llvm-18/lib/libc++abi.so.1.0
+
+== libstdc++ Libraries ==
+  - /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33
+  - /usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.a
+  - /usr/lib/gcc/x86_64-linux-gnu/14/libstdc++.a
+
+== Boost Headers ==
+  - /usr/include/boost/version.hpp
+  version            1_83 (108300)
+
+== Boost CMake Configs ==
+  - /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0
+
+== Boost Libraries ==
+  - /usr/lib/x86_64-linux-gnu/libboost_atomic.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_container.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_context.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_coroutine.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_fiber.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_graph_parallel.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_graph.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_iostreams.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_json.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_locale.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_log_setup.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_log.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_math_c99f.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_math_c99l.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_math_c99.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_math_tr1f.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_math_tr1l.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_math_tr1.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_mpi_python312.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_mpi.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_nowide.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_numpy312.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_prg_exec_monitor.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_python312.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_random.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_serialization.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_addr2line.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_backtrace.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_basic.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_noop.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_system.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_timer.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_type_erasure.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_unit_test_framework.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_url.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_wave.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_wserialization.so.1.83.0
+  - /usr/lib/x86_64-linux-gnu/libboost_atomic.a
+  - /usr/lib/x86_64-linux-gnu/libboost_chrono.a
+  - /usr/lib/x86_64-linux-gnu/libboost_container.a
+  - /usr/lib/x86_64-linux-gnu/libboost_context.a
+  - /usr/lib/x86_64-linux-gnu/libboost_coroutine.a
+  - /usr/lib/x86_64-linux-gnu/libboost_date_time.a
+  - /usr/lib/x86_64-linux-gnu/libboost_exception.a
+  - /usr/lib/x86_64-linux-gnu/libboost_fiber.a
+  - /usr/lib/x86_64-linux-gnu/libboost_filesystem.a
+  - /usr/lib/x86_64-linux-gnu/libboost_graph.a
+  - /usr/lib/x86_64-linux-gnu/libboost_graph_parallel.a
+  - /usr/lib/x86_64-linux-gnu/libboost_iostreams.a
+  - /usr/lib/x86_64-linux-gnu/libboost_json.a
+  - /usr/lib/x86_64-linux-gnu/libboost_locale.a
+  - /usr/lib/x86_64-linux-gnu/libboost_log.a
+  - /usr/lib/x86_64-linux-gnu/libboost_log_setup.a
+  - /usr/lib/x86_64-linux-gnu/libboost_math_c99.a
+  - /usr/lib/x86_64-linux-gnu/libboost_math_c99f.a
+  - /usr/lib/x86_64-linux-gnu/libboost_math_c99l.a
+  - /usr/lib/x86_64-linux-gnu/libboost_math_tr1.a
+  - /usr/lib/x86_64-linux-gnu/libboost_math_tr1f.a
+  - /usr/lib/x86_64-linux-gnu/libboost_math_tr1l.a
+  - /usr/lib/x86_64-linux-gnu/libboost_mpi.a
+  - /usr/lib/x86_64-linux-gnu/libboost_mpi_python312.a
+  - /usr/lib/x86_64-linux-gnu/libboost_nowide.a
+  - /usr/lib/x86_64-linux-gnu/libboost_numpy312.a
+  - /usr/lib/x86_64-linux-gnu/libboost_prg_exec_monitor.a
+  - /usr/lib/x86_64-linux-gnu/libboost_program_options.a
+  - /usr/lib/x86_64-linux-gnu/libboost_python312.a
+  - /usr/lib/x86_64-linux-gnu/libboost_random.a
+  - /usr/lib/x86_64-linux-gnu/libboost_regex.a
+  - /usr/lib/x86_64-linux-gnu/libboost_serialization.a
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_addr2line.a
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_backtrace.a
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_basic.a
+  - /usr/lib/x86_64-linux-gnu/libboost_stacktrace_noop.a
+  - /usr/lib/x86_64-linux-gnu/libboost_system.a
+  - /usr/lib/x86_64-linux-gnu/libboost_test_exec_monitor.a
+  - /usr/lib/x86_64-linux-gnu/libboost_thread.a
+  - /usr/lib/x86_64-linux-gnu/libboost_timer.a
+  - /usr/lib/x86_64-linux-gnu/libboost_type_erasure.a
+  - /usr/lib/x86_64-linux-gnu/libboost_unit_test_framework.a
+  - /usr/lib/x86_64-linux-gnu/libboost_url.a
+  - /usr/lib/x86_64-linux-gnu/libboost_wave.a
+  - /usr/lib/x86_64-linux-gnu/libboost_wserialization.a
+  key libs seen      8

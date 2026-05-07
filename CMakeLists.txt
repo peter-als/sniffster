@@ -5,9 +5,114 @@ cmake_minimum_required(VERSION 3.28)
 # ─────────────────────────────────────────────────────────────────────────────
 cmake_policy(SET CMP0167 OLD)
 
-set(CMAKE_CXX_STANDARD 26)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 26)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Prefer the default clang++ first when the user did not explicitly choose a
+# compiler via cache, preset, or environment. If that clang++ cannot satisfy
+# the requested language level, walk versioned clang++ installs from the lowest
+# major upward until one works. This avoids a silent fallback to GCC here while
+# still keeping the project portable across machines with different Clang
+# versions installed.
+if(NOT DEFINED CMAKE_C_COMPILER
+   AND NOT DEFINED CMAKE_CXX_COMPILER
+   AND NOT DEFINED ENV{CC}
+   AND NOT DEFINED ENV{CXX})
+    set(_sniffster_cxx_standard_probe
+        "${CMAKE_CURRENT_BINARY_DIR}/sniffster-cxx-standard-probe.cpp")
+    file(WRITE "${_sniffster_cxx_standard_probe}" "int main() { return 0; }\n")
+
+    function(_sniffster_clang_supports_required_standard compiler out_var)
+        execute_process(
+            COMMAND "${compiler}" -x c++ "-std=c++${CMAKE_CXX_STANDARD}"
+                    -fsyntax-only "${_sniffster_cxx_standard_probe}"
+            RESULT_VARIABLE _sniffster_probe_result
+            OUTPUT_QUIET
+            ERROR_QUIET
+        )
+
+        set(${out_var} FALSE PARENT_SCOPE)
+        if(_sniffster_probe_result EQUAL 0)
+            set(${out_var} TRUE PARENT_SCOPE)
+        endif()
+    endfunction()
+
+    function(_sniffster_select_matching_clang_toolchain clangxx)
+        get_filename_component(_sniffster_clang_bindir "${clangxx}" DIRECTORY)
+        get_filename_component(_sniffster_clangxx_name "${clangxx}" NAME)
+
+        string(REGEX MATCH "clang\\+\\+-([0-9]+)$"
+            _sniffster_clangxx_version_match
+            "${_sniffster_clangxx_name}")
+
+        set(_sniffster_clang_candidates clang)
+        set(_sniffster_clang_scan_deps_candidates clang-scan-deps)
+        if(CMAKE_MATCH_1)
+            list(PREPEND _sniffster_clang_candidates "clang-${CMAKE_MATCH_1}")
+            list(PREPEND _sniffster_clang_scan_deps_candidates
+                "clang-scan-deps-${CMAKE_MATCH_1}")
+        endif()
+
+        find_program(_sniffster_clang
+            NAMES ${_sniffster_clang_candidates}
+            HINTS "${_sniffster_clang_bindir}")
+        find_program(_sniffster_clang_scan_deps
+            NAMES ${_sniffster_clang_scan_deps_candidates}
+            HINTS "${_sniffster_clang_bindir}")
+
+        if(_sniffster_clang)
+            set(CMAKE_C_COMPILER "${_sniffster_clang}" CACHE FILEPATH
+                "Preferred C compiler for sniffster")
+            set(CMAKE_CXX_COMPILER "${clangxx}" CACHE FILEPATH
+                "Preferred C++ compiler for sniffster")
+
+            if(_sniffster_clang_scan_deps)
+                set(CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS
+                    "${_sniffster_clang_scan_deps}" CACHE FILEPATH
+                    "clang-scan-deps executable matched to the selected Clang")
+            endif()
+        endif()
+    endfunction()
+
+    set(_sniffster_selected_clangxx "")
+
+    find_program(_sniffster_default_clangxx NAMES clang++)
+    if(_sniffster_default_clangxx)
+        _sniffster_clang_supports_required_standard(
+            "${_sniffster_default_clangxx}" _sniffster_default_clangxx_works)
+        if(_sniffster_default_clangxx_works)
+            set(_sniffster_selected_clangxx "${_sniffster_default_clangxx}")
+        endif()
+    endif()
+
+    # if(NOT _sniffster_selected_clangxx)
+    #     foreach(_sniffster_clang_version RANGE 10 40)
+    #         unset(_sniffster_versioned_clangxx CACHE)
+    #         unset(_sniffster_versioned_clangxx)
+    #         find_program(_sniffster_versioned_clangxx
+    #             NAMES "clang++-${_sniffster_clang_version}")
+
+    #         if(_sniffster_versioned_clangxx)
+    #             _sniffster_clang_supports_required_standard(
+    #                 "${_sniffster_versioned_clangxx}"
+    #                 _sniffster_versioned_clangxx_works)
+    #             if(_sniffster_versioned_clangxx_works)
+    #                 set(_sniffster_selected_clangxx
+    #                     "${_sniffster_versioned_clangxx}")
+    #                 break()
+    #             endif()
+    #         endif()
+    #     endforeach()
+    # endif()
+
+    if(_sniffster_selected_clangxx)
+        _sniffster_select_matching_clang_toolchain(
+            "${_sniffster_selected_clangxx}")
+    endif()
+endif()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Would love to use CMAKE_CXX_STANDARD_LIBRARIES to support `import std;` across
@@ -15,20 +120,47 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # the time being and using old good `#include` for standard libraries for now.
 # ─────────────────────────────────────────────────────────────────────────────
 
-set(SNIFFSTER_CXX_STDLIB "libc++" CACHE STRING
+set(SNIFFSTER_CXX_STDLIB "" CACHE STRING
     "C++ standard library to use (empty, libstdc++, or libc++)")
 set_property(CACHE SNIFFSTER_CXX_STDLIB PROPERTY STRINGS "" "libstdc++" "libc++")
+set(SNIFFSTER_GCC_INSTALL_DIR "" CACHE PATH
+    "Exact GCC install dir to pair with Clang, e.g. /usr/lib/gcc/x86_64-linux-gnu/14")
 
-set(SNIFFSTER_LIBCPP_EXTRA_FLAGS "")
-if(SNIFFSTER_CXX_STDLIB)
-    set(CMAKE_CXX_FLAGS_INIT "-stdlib=${SNIFFSTER_CXX_STDLIB}")
-    set(CMAKE_EXE_LINKER_FLAGS_INIT "-stdlib=${SNIFFSTER_CXX_STDLIB}")
-    set(CMAKE_SHARED_LINKER_FLAGS_INIT "-stdlib=${SNIFFSTER_CXX_STDLIB}")
+set(SNIFFSTER_STDLIB_COMPILE_OPTIONS "")
+set(SNIFFSTER_STDLIB_LINK_OPTIONS "")
+set(SNIFFSTER_STDLIB_REQUIRED_FLAGS "")
+set(SNIFFSTER_STDLIB_STD_PRINT_HINT
+    "No standard library is explicitly selected. On this machine clang++ may "
+    "default to a libstdc++ that does not ship <print>. Configure with "
+    "-DSNIFFSTER_CXX_STDLIB=libc++ or use a newer libstdc++.")
+# set(SNIFFSTER_STDLIB_BOOST_CANDIDATES "")
 
-    if(SNIFFSTER_CXX_STDLIB STREQUAL "libc++")
-        string(APPEND SNIFFSTER_LIBCPP_EXTRA_FLAGS " -fexperimental-library")
-        string(APPEND CMAKE_CXX_FLAGS_INIT "${SNIFFSTER_LIBCPP_EXTRA_FLAGS}")
-    endif()
+if(SNIFFSTER_CXX_STDLIB STREQUAL "libc++")
+    set(SNIFFSTER_STDLIB_COMPILE_OPTIONS
+        -stdlib=libc++
+        -fexperimental-library)
+    set(SNIFFSTER_STDLIB_LINK_OPTIONS
+        -stdlib=libc++)
+    set(SNIFFSTER_STDLIB_STD_PRINT_HINT
+        "libc++ is selected but <print> did not compile. "
+        "Verify libc++ headers and libraries are installed correctly.")
+elseif(SNIFFSTER_CXX_STDLIB STREQUAL "libstdc++")
+    set(SNIFFSTER_STDLIB_COMPILE_OPTIONS
+        -stdlib=libstdc++)
+    set(SNIFFSTER_STDLIB_LINK_OPTIONS
+        -stdlib=libstdc++)
+    set(SNIFFSTER_STDLIB_STD_PRINT_HINT
+        "libstdc++ is selected but the configured version does not provide <print>. "
+        "Use a newer libstdc++ or switch to libc++.")
+elseif(SNIFFSTER_CXX_STDLIB)
+    message(FATAL_ERROR
+        "Unsupported SNIFFSTER_CXX_STDLIB='${SNIFFSTER_CXX_STDLIB}'. "
+        "Expected empty, libstdc++, or libc++.")
+endif()
+
+if(SNIFFSTER_STDLIB_COMPILE_OPTIONS)
+    string(JOIN " " SNIFFSTER_STDLIB_REQUIRED_FLAGS
+        ${SNIFFSTER_STDLIB_COMPILE_OPTIONS})
 endif()
 
 project(sniffster LANGUAGES C CXX)
@@ -46,43 +178,48 @@ include(CheckCXXSourceCompiles)
 option(SNIFFSTER_ENABLE_SANITIZERS
     "Enable AddressSanitizer and UndefinedBehaviorSanitizer for host builds" OFF)
 
-set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
-    "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++.")
-option(SNIFFSTER_BOOST_NO_SYSTEM_PATHS
-    "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" OFF)
-
-if(SNIFFSTER_BOOST_ROOT
-   AND EXISTS "${SNIFFSTER_BOOST_ROOT}/boost/version.hpp"
-   AND EXISTS "${SNIFFSTER_BOOST_ROOT}/stage/lib"
-   AND NOT EXISTS "${SNIFFSTER_BOOST_ROOT}/include/boost/version.hpp")
-    set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
-        "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++." FORCE)
-    set(SNIFFSTER_BOOST_NO_SYSTEM_PATHS OFF CACHE BOOL
-        "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" FORCE)
+if(SNIFFSTER_GCC_INSTALL_DIR)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        list(APPEND SNIFFSTER_STDLIB_COMPILE_OPTIONS
+            "--gcc-install-dir=${SNIFFSTER_GCC_INSTALL_DIR}")
+        list(APPEND SNIFFSTER_STDLIB_LINK_OPTIONS
+            "--gcc-install-dir=${SNIFFSTER_GCC_INSTALL_DIR}")
+        string(APPEND SNIFFSTER_STDLIB_REQUIRED_FLAGS
+            " --gcc-install-dir=${SNIFFSTER_GCC_INSTALL_DIR}")
+    else()
+        message(WARNING
+            "SNIFFSTER_GCC_INSTALL_DIR is set to '${SNIFFSTER_GCC_INSTALL_DIR}', "
+            "but the current C++ compiler is ${CMAKE_CXX_COMPILER_ID}. "
+            "Ignoring this Clang-specific setting.")
+    endif()
 endif()
 
-if(NOT SNIFFSTER_BOOST_ROOT AND SNIFFSTER_CXX_STDLIB STREQUAL "libc++")
-    set(_sniffster_boost_candidates
-        "/usr/local"
-        "/opt/boost-libcpp"
-        "/opt/boost-1.83-libcpp"
-        "/usr/local/boost-libcpp"
-        "/usr/local/boost-1.83-libcpp"
-        "$ENV{HOME}/opt/boost-libcpp"
-        "$ENV{HOME}/opt/boost-1.83-libcpp"
-        "$ENV{HOME}/local/boost-libcpp"
-        "$ENV{HOME}/local/boost-1.83-libcpp")
-
-    foreach(_sniffster_boost_candidate IN LISTS _sniffster_boost_candidates)
-        if(EXISTS "${_sniffster_boost_candidate}/include/boost/version.hpp")
-            set(SNIFFSTER_BOOST_ROOT "${_sniffster_boost_candidate}" CACHE PATH
-                "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++." FORCE)
-            set(SNIFFSTER_BOOST_NO_SYSTEM_PATHS ON CACHE BOOL
-                "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" FORCE)
-            break()
-        endif()
-    endforeach()
-endif()
+# set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
+#     "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++.")
+# option(SNIFFSTER_BOOST_NO_SYSTEM_PATHS
+#     "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" OFF)
+#
+# if(SNIFFSTER_BOOST_ROOT
+#    AND EXISTS "${SNIFFSTER_BOOST_ROOT}/boost/version.hpp"
+#    AND EXISTS "${SNIFFSTER_BOOST_ROOT}/stage/lib"
+#    AND NOT EXISTS "${SNIFFSTER_BOOST_ROOT}/include/boost/version.hpp")
+#     set(SNIFFSTER_BOOST_ROOT "" CACHE PATH
+#         "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++." FORCE)
+#     set(SNIFFSTER_BOOST_NO_SYSTEM_PATHS OFF CACHE BOOL
+#         "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" FORCE)
+# endif()
+#
+# if(NOT SNIFFSTER_BOOST_ROOT AND SNIFFSTER_STDLIB_BOOST_CANDIDATES)
+#     foreach(_sniffster_boost_candidate IN LISTS SNIFFSTER_STDLIB_BOOST_CANDIDATES)
+#         if(EXISTS "${_sniffster_boost_candidate}/include/boost/version.hpp")
+#             set(SNIFFSTER_BOOST_ROOT "${_sniffster_boost_candidate}" CACHE PATH
+#                 "Preferred Boost installation prefix. Set this to a libc++-built Boost when using Boost.Log with libc++." FORCE)
+#             set(SNIFFSTER_BOOST_NO_SYSTEM_PATHS ON CACHE BOOL
+#                 "Restrict Boost discovery to SNIFFSTER_BOOST_ROOT/BOOST_ROOT and CMake hints" FORCE)
+#             break()
+#         endif()
+#     endforeach()
+# endif()
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     add_compile_options(-march=x86-64-v2)
@@ -103,9 +240,12 @@ if(SNIFFSTER_ENABLE_SANITIZERS)
     add_link_options(-fsanitize=address,undefined)
 endif()
 
-if(SNIFFSTER_LIBCPP_EXTRA_FLAGS)
-    separate_arguments(SNIFFSTER_LIBCPP_EXTRA_FLAGS_LIST NATIVE_COMMAND "${SNIFFSTER_LIBCPP_EXTRA_FLAGS}")
-    add_compile_options(${SNIFFSTER_LIBCPP_EXTRA_FLAGS_LIST})
+if(SNIFFSTER_STDLIB_COMPILE_OPTIONS)
+    add_compile_options(${SNIFFSTER_STDLIB_COMPILE_OPTIONS})
+endif()
+
+if(SNIFFSTER_STDLIB_LINK_OPTIONS)
+    add_link_options(${SNIFFSTER_STDLIB_LINK_OPTIONS})
 endif()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -113,11 +253,9 @@ endif()
 # ─────────────────────────────────────────────────────────────────────────────
 
 set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++${CMAKE_CXX_STANDARD}")
-if(SNIFFSTER_CXX_STDLIB)
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -stdlib=${SNIFFSTER_CXX_STDLIB}")
-    if(SNIFFSTER_LIBCPP_EXTRA_FLAGS)
-        set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}${SNIFFSTER_LIBCPP_EXTRA_FLAGS}")
-    endif()
+if(SNIFFSTER_STDLIB_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_FLAGS
+        "${CMAKE_REQUIRED_FLAGS} ${SNIFFSTER_STDLIB_REQUIRED_FLAGS}")
 endif()
 
 unset(SNIFFSTER_HAVE_STD_PRINT CACHE)
@@ -131,26 +269,11 @@ check_cxx_source_compiles("
 " SNIFFSTER_HAVE_STD_PRINT)
 
 if(NOT SNIFFSTER_HAVE_STD_PRINT)
-    if(SNIFFSTER_CXX_STDLIB STREQUAL "libc++")
-        set(SNIFFSTER_STD_PRINT_HINT
-            "libc++ is selected but <print> did not compile. "
-            "Verify libc++ headers and libraries are installed correctly.")
-    elseif(SNIFFSTER_CXX_STDLIB STREQUAL "libstdc++")
-        set(SNIFFSTER_STD_PRINT_HINT
-            "libstdc++ is selected but the configured version does not provide <print>. "
-            "Use a newer libstdc++ or switch to libc++.")
-    else()
-        set(SNIFFSTER_STD_PRINT_HINT
-            "No standard library is explicitly selected. On this machine clang++ may "
-            "default to a libstdc++ that does not ship <print>. Configure with "
-            "-DSNIFFSTER_CXX_STDLIB=libc++ or use a newer libstdc++.")
-    endif()
-
     message(FATAL_ERROR
         "The configured C++ toolchain does not provide <print>.\n"
         "Compiler: ${CMAKE_CXX_COMPILER}\n"
         "Requested stdlib: ${SNIFFSTER_CXX_STDLIB}\n"
-        "${SNIFFSTER_STD_PRINT_HINT}")
+        "${SNIFFSTER_STDLIB_STD_PRINT_HINT}")
 endif()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -232,38 +355,34 @@ pkg_check_modules(LIBBPF REQUIRED libbpf)
 pkg_check_modules(LIBELF REQUIRED libelf)
 pkg_check_modules(ZLIB REQUIRED zlib)
 
-if(SNIFFSTER_BOOST_ROOT)
-    set(BOOST_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
-        "Boost root directory" FORCE)
-    set(Boost_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
-        "Boost root directory" FORCE)
-
-    if(EXISTS "${SNIFFSTER_BOOST_ROOT}/include/boost/version.hpp")
-        set(BOOST_INCLUDEDIR "${SNIFFSTER_BOOST_ROOT}/include" CACHE PATH
-            "Boost include directory" FORCE)
-        set(Boost_INCLUDE_DIR "${SNIFFSTER_BOOST_ROOT}/include" CACHE PATH
-            "Boost include directory" FORCE)
-    endif()
-
-    if(EXISTS "${SNIFFSTER_BOOST_ROOT}/lib")
-        set(BOOST_LIBRARYDIR "${SNIFFSTER_BOOST_ROOT}/lib" CACHE PATH
-            "Boost library directory" FORCE)
-        set(Boost_LIBRARY_DIR "${SNIFFSTER_BOOST_ROOT}/lib" CACHE PATH
-            "Boost library directory" FORCE)
-    endif()
-endif()
-
-if(SNIFFSTER_BOOST_NO_SYSTEM_PATHS)
-    set(Boost_NO_SYSTEM_PATHS ON)
-endif()
-
-set(Boost_NO_BOOST_CMAKE ON)
+# if(SNIFFSTER_BOOST_ROOT)
+#     set(BOOST_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
+#         "Boost root directory" FORCE)
+#     set(Boost_ROOT "${SNIFFSTER_BOOST_ROOT}" CACHE PATH
+#         "Boost root directory" FORCE)
+#
+#     if(EXISTS "${SNIFFSTER_BOOST_ROOT}/include/boost/version.hpp")
+#         set(BOOST_INCLUDEDIR "${SNIFFSTER_BOOST_ROOT}/include" CACHE PATH
+#             "Boost include directory" FORCE)
+#         set(Boost_INCLUDE_DIR "${SNIFFSTER_BOOST_ROOT}/include" CACHE PATH
+#             "Boost include directory" FORCE)
+#     endif()
+#
+#     if(EXISTS "${SNIFFSTER_BOOST_ROOT}/lib")
+#         set(BOOST_LIBRARYDIR "${SNIFFSTER_BOOST_ROOT}/lib" CACHE PATH
+#             "Boost library directory" FORCE)
+#         set(Boost_LIBRARY_DIR "${SNIFFSTER_BOOST_ROOT}/lib" CACHE PATH
+#             "Boost library directory" FORCE)
+#     endif()
+# endif()
+#
+# if(SNIFFSTER_BOOST_NO_SYSTEM_PATHS)
+#     set(Boost_NO_SYSTEM_PATHS ON)
+# endif()
+#
+# set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost REQUIRED COMPONENTS program_options filesystem log log_setup)
-
-message(STATUS
-    "Boost_ROOT=${Boost_ROOT}; BOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}; BOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}; "
-    "Boost_NO_SYSTEM_PATHS=${Boost_NO_SYSTEM_PATHS}; Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BPF object and skeleton generation

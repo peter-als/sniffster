@@ -135,7 +135,8 @@ int main(int argc, char **argv) {
 
         sniffster::logger_t boost_logger{sniffster::severity_level::debug};
 
-        auto log_startup = [&](std::string_view message) {
+        // For newer boost versions wo could use string_view:
+        auto log_startup = [&](const std::string& message) {
             BOOST_LOG_SEV(boost_logger, sniffster::severity_level::debug) << message;
         };
 
