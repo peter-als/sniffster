@@ -31,7 +31,8 @@ LINT_TIDY_BASE = $(LINT_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLAN
 FIX_TIDY_BASE = $(TIDY_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLANG_TIDY_HEADER_FILTER)
 LINT_PARALLEL = xargs -r -n 1 -P $(PARALLEL_THREADS)
 
-CLANG_FORMAT_STYLE := "{BasedOnStyle: llvm, IndentWidth: 4, ColumnLimit: 85}"
+# CLANG_FORMAT_STYLE := "{BasedOnStyle: llvm, IndentWidth: 4, ColumnLimit: 85}"
+CLANG_FORMAT_STYLE := "file"
 PARALLEL_THREADS ?= 8
 BUILD_PARALLEL := --parallel $(PARALLEL_THREADS)
 CTEST_PARALLEL := --parallel $(PARALLEL_THREADS)
