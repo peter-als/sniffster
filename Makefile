@@ -31,8 +31,6 @@ LINT_TIDY_BASE = $(LINT_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLAN
 FIX_TIDY_BASE = $(TIDY_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLANG_TIDY_HEADER_FILTER)
 LINT_PARALLEL = xargs -r -n 1 -P $(PARALLEL_THREADS)
 
-# CLANG_FORMAT_STYLE := "{BasedOnStyle: llvm, IndentWidth: 4, ColumnLimit: 85}"
-CLANG_FORMAT_STYLE := file
 PARALLEL_THREADS ?= 8
 BUILD_PARALLEL := --parallel $(PARALLEL_THREADS)
 CTEST_PARALLEL := --parallel $(PARALLEL_THREADS)
@@ -46,11 +44,6 @@ lint: lint-tidy-note debug ## Run clang-tidy checks on all C++ source/module fil
 tidy: lint-tidy-note debug ## Run clang-tidy with in-place auto-fixes (requires debug build)
 	@for file in $(CORE_SOURCES); do \
 		$(FIX_TIDY_BASE) -fix "$$file" || exit $$?; \
-	done
-
-format: ## Run clang-format with LLVM-based style
-	@for file in $(FORMAT_SOURCES); do \
-		$(FORMAT_TOOL) -i -style=$(CLANG_FORMAT_STYLE) "$$file" || exit $$?; \
 	done
 
 lint-tidy-note:
