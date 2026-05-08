@@ -1,5 +1,5 @@
 .PHONY: help debug release sanitized test-debug test-release test-sanitized \
-	lint tidy format clean lint-tidy-note
+	lint tidy format clean lint-tidy-note clang-format-config
 
 CORE_SOURCES := \
 	main.cpp \
@@ -29,6 +29,7 @@ CLANG_TIDY_HEADER_FILTER := \
 LINT_TIDY_BASE = $(LINT_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLANG_TIDY_HEADER_FILTER)
 
 FIX_TIDY_BASE = $(TIDY_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLANG_TIDY_HEADER_FILTER)
+LINT_PARALLEL = xargs -r -n 1 -P $(PARALLEL_THREADS)
 
 CLANG_FORMAT_STYLE := "{BasedOnStyle: llvm, IndentWidth: 4, ColumnLimit: 85}"
 PARALLEL_THREADS ?= 8
@@ -39,9 +40,7 @@ help: ## Show available make targets
 	@awk 'BEGIN {FS=":.*## "}; /^[a-zA-Z0-9_.-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 lint: lint-tidy-note debug ## Run clang-tidy checks on all C++ source/module files (requires debug build)
-	@for file in $(CORE_SOURCES); do \
-		$(LINT_TIDY_BASE) "$$file" || exit $$?; \
-	done
+	@printf '%s\n' $(CORE_SOURCES) | $(LINT_PARALLEL) $(LINT_TIDY_BASE)
 
 tidy: lint-tidy-note debug ## Run clang-tidy with in-place auto-fixes (requires debug build)
 	@for file in $(CORE_SOURCES); do \

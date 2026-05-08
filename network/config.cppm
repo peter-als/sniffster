@@ -36,7 +36,7 @@ struct network_interface {
     std::uint32_t   ipv6_prefix_len{};
     bool            has_ipv6{};
 
-    explicit network_interface(const std::string& ifname) : name(ifname) {
+    explicit network_interface(std::string ifname) : name(std::move(ifname)) {
         ifindex = if_nametoindex(name.c_str());
         if (ifindex == 0) {
             platform::throw_runtime_error(std::format("Interface index not found: {}", name));

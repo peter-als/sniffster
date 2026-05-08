@@ -25,7 +25,7 @@ public:
         std::uint32_t count = 0;
         for (const auto& entry : fs::directory_iterator(path)) {
             if (entry.is_directory() &&
-                entry.path().filename().string().compare(0, 3, "rx-") == 0) {
+                entry.path().filename().string().starts_with("rx-") == 0) {
                 count++;
             }
         }
