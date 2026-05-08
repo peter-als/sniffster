@@ -58,13 +58,13 @@ sniffster::packet_meta_event make_event(std::uint8_t octet) {
 
     const std::array<std::uint8_t, ETH_ALEN> src_mac{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, octet};
     const std::array<std::uint8_t, ETH_ALEN> dst_mac{0x00, 0x11, 0x22, 0x33, 0x44, octet};
-    std::copy(src_mac.begin(), src_mac.end(), event.packet_identity.src_mac);
-    std::copy(dst_mac.begin(), dst_mac.end(), event.packet_identity.dst_mac);
+    std::ranges::copy(src_mac, event.packet_identity.src_mac);
+    std::ranges::copy(dst_mac, event.packet_identity.dst_mac);
 
     const std::array<std::uint8_t, 4> src_ip{192, 168, 1, octet};
     const std::array<std::uint8_t, 4> dst_ip{10, 0, 0, octet};
-    std::copy(src_ip.begin(), src_ip.end(), event.packet_identity.src_ip.data());
-    std::copy(dst_ip.begin(), dst_ip.end(), event.packet_identity.dst_ip.data());
+    std::ranges::copy(src_ip, event.packet_identity.src_ip.data());
+    std::ranges::copy(dst_ip, event.packet_identity.dst_ip.data());
     return event;
 }
 
@@ -94,8 +94,8 @@ TEST(PacketProcessorTest, FlushesOnlyAfterBatchThreshold) {
 
     const auto lines = read_lines(report_file.path());
     ASSERT_EQ(lines.size(), 10u);
-    EXPECT_NE(lines.front().find("\"ip_src\": \"192.168.1.1\""), std::string::npos);
-    EXPECT_NE(lines.back().find("\"ip_src\": \"192.168.1.10\""), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("ip_src": "192.168.1.1")"), std::string::npos);
+    EXPECT_NE(lines.back().find(R"("ip_src": "192.168.1.10")"), std::string::npos);
 }
 
 TEST(PacketProcessorTest, DestructorFlushesPendingPartialBatch) {
@@ -111,7 +111,7 @@ TEST(PacketProcessorTest, DestructorFlushesPendingPartialBatch) {
 
     const auto lines = read_lines(report_file.path());
     ASSERT_EQ(lines.size(), 1u);
-    EXPECT_NE(lines.front().find("\"ip_src\": \"192.168.1.42\""), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("ip_src": "192.168.1.42")"), std::string::npos);
 }
 
 } // namespace

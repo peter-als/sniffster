@@ -110,8 +110,8 @@ network_key_bytes make_v4_network_key_bytes(
     std::array<std::uint8_t, 4> ipv4
 ) {
     network_key_bytes bytes{};
-    std::copy(mac.begin(), mac.end(), bytes.begin());
-    std::copy(ipv4.begin(), ipv4.end(), bytes.begin() + 6);
+    std::ranges::copy(mac, bytes.begin());
+    std::ranges::copy(ipv4, bytes.begin() + 6);
     return bytes;
 }
 
@@ -120,8 +120,8 @@ network_key_bytes make_v6_network_key_bytes(
     std::array<std::uint8_t, 16> ipv6
 ) {
     network_key_bytes bytes{};
-    std::copy(mac.begin(), mac.end(), bytes.begin());
-    std::copy(ipv6.begin(), ipv6.end(), bytes.begin() + 6);
+    std::ranges::copy(mac, bytes.begin());
+    std::ranges::copy(ipv6, bytes.begin() + 6);
     return bytes;
 }
 

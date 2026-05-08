@@ -71,8 +71,7 @@ private:
         }
 
         auto used_buffer_size = batch_buffer_.size() - batch_buffer_view_.size();
-        report_file_.write((const char*)batch_buffer_.data(),
-                           static_cast<std::streamsize>(used_buffer_size));
+        report_file_.write(batch_buffer_.data(), used_buffer_size);
                            
         report_file_.flush();
         if (!report_file_) {

@@ -6,6 +6,7 @@ module;
 #include <iterator>
 #include <span>
 #include <string>
+#include <utility>
 
 #include <print>
 #include <linux/if_ether.h>
@@ -26,7 +27,7 @@ namespace sniffster {
 force_inline_
 void assert_buffer_capacity(const std::format_to_n_result<char*>& result,
                             std::size_t remaining) {
-    if (static_cast<std::size_t>(result.size) > remaining) {
+    if (std::cmp_greater(result.size, remaining)) {
         platform::throw_runtime_error("batch buffer overflow");
     }
 }
@@ -56,6 +57,7 @@ std::span<char> append_format(std::span<char> buffer,
     return buffer.subspan(static_cast<std::size_t>(result.out - buffer.data()));
 }
 
+force_inline_
 std::span<char> append_transport_description(std::span<char> buffer,
                                                 char transport_proto) {
     if (transport_proto == 0) {
@@ -63,23 +65,24 @@ std::span<char> append_transport_description(std::span<char> buffer,
     }
 
     buffer = append_format(buffer,
-                           ", \"l4_proto\": {}",
+                           R"(, "l4_proto": {})",
                            static_cast<unsigned>(transport_proto));
 
     const auto l4_name = transport_proto_to_str(transport_proto);
     if (!l4_name.empty()) {
-        buffer = append_format(buffer, ", \"l4_name\": \"{}\"", l4_name);
+        buffer = append_format(buffer, R"(, "l4_name": "{}")", l4_name);
     }
 
     return buffer;
 }
 
+force_inline_
 std::span<char>  append_ip4_description(std::span<char> buffer, const packet_meta_event& event) {
     const auto& identity = event.packet_identity;
     const auto src_ip = ipv4_addr_const_view{identity.src_ip};
     const auto dst_ip = ipv4_addr_const_view{identity.dst_ip};
     buffer = append_format(buffer,
-        ", \"l3_type\": \"IPv4\", \"ip_src\": \"{}\", \"ip_dst\": \"{}\"",
+        R"(, "l3_type": "IPv4", "ip_src": "{}", "ip_dst": "{}")",
         ip_to_str(AF_INET, src_ip.data()),
         ip_to_str(AF_INET, dst_ip.data()));
 
@@ -87,12 +90,13 @@ std::span<char>  append_ip4_description(std::span<char> buffer, const packet_met
     return buffer;
 }
 
+force_inline_
 std::span<char>  append_ip6_description(std::span<char> buffer, const packet_meta_event& event) {
     const auto& identity = event.packet_identity;
     const auto src_ip = ipv6_addr_const_view{identity.src_ip};
     const auto dst_ip = ipv6_addr_const_view{identity.dst_ip};
     buffer = append_format(buffer,
-        ", \"l3_type\": \"IPv6\", \"ip_src\": \"{}\", \"ip_dst\": \"{}\"",
+        R"(, "l3_type": "IPv6", "ip_src": "{}", "ip_dst": "{}")",
         ip_to_str(AF_INET6, src_ip.data()),
         ip_to_str(AF_INET6, dst_ip.data()));
 
@@ -100,12 +104,13 @@ std::span<char>  append_ip6_description(std::span<char> buffer, const packet_met
     return buffer;
 }
 
+force_inline_
 std::span<char>  append_arp_description(std::span<char> buffer, const packet_meta_event& event, __u16 eth_proto) {
     const auto& identity = event.packet_identity;
     const auto src_ip = ipv4_addr_const_view{identity.src_ip};
     const auto dst_ip = ipv4_addr_const_view{identity.dst_ip};
     buffer = append_format(buffer,
-        ", \"l3_type\": \"{}\", \"ip_src\": \"{}\", \"ip_dst\": \"{}\"",
+        R"(, "l3_type": "{}", "ip_src": "{}", "ip_dst": "{}")",
         eth_proto == ETH_P_ARP ? "ARP" : (eth_proto == ETH_P_RARP ? "RARP" : "Unknown"),
         ip_to_str(AF_INET, src_ip.data()),
         ip_to_str(AF_INET, dst_ip.data()));
@@ -113,6 +118,7 @@ std::span<char>  append_arp_description(std::span<char> buffer, const packet_met
 }
 
 export std::span<char> // returns the remaining buffer after appending
+force_inline_
 append_event_jsonl(std::span<char> buffer, const packet_meta_event& event) {
 
     const auto& identity = event.packet_identity;
@@ -121,7 +127,7 @@ append_event_jsonl(std::span<char> buffer, const packet_meta_event& event) {
     const auto latest_ts = event.latest_timestamp.time_since_epoch().count();
 
     buffer = append_format(buffer,
-        "{{\"cpu\": {}, \"q\": {}, \"sample_len\": {}, \"l2_type\": \"{:#x}\"",
+        R"({{"cpu": {}, "q": {}, "sample_len": {}, "l2_type": "{:#x}")",
         event.cpu_id,
         event.rx_queue,
         event.packet_size,
@@ -129,15 +135,15 @@ append_event_jsonl(std::span<char> buffer, const packet_meta_event& event) {
 
     const auto eth_name = eth_proto_to_str(eth_proto);
     if (!eth_name.empty()) {
-        buffer = append_format(buffer, ", \"l2_name\": \"{}\"", eth_name);
+        buffer = append_format(buffer, R"(, "l2_name": "{}")", eth_name);
     }
 
     buffer = append_format(buffer,
-        ", \"coalesced\": {}",
+        R"(, "coalesced": {})",
         event.coalesced_count);
 
     buffer = append_format(buffer,
-        ", \"mac_src\": \"{}\", \"mac_dst\": \"{}\"",
+        R"(, "mac_src": "{}", "mac_dst": "{}")",
         mac_to_str(identity.src_mac),
         mac_to_str(identity.dst_mac));
 
@@ -159,7 +165,7 @@ append_event_jsonl(std::span<char> buffer, const packet_meta_event& event) {
     }
 
     buffer = append_format(buffer,
-        ", \"first_ts\": {}, \"latest_ts\": {}}}",
+        R"(, "first_ts": {}, "latest_ts": {}}})",
         first_ts,
         latest_ts);
 
@@ -167,7 +173,9 @@ append_event_jsonl(std::span<char> buffer, const packet_meta_event& event) {
     return buffer;
 }
 
-export void append_event_jsonl(std::string& output, const packet_meta_event& event) {
+export
+force_inline_
+void append_event_jsonl(std::string& output, const packet_meta_event& event) {
     std::array<char, 10240> line{};
     auto remaining = append_event_jsonl(std::span<char>{line}, event);
     const auto used = line.size() - remaining.size();
@@ -176,7 +184,9 @@ export void append_event_jsonl(std::string& output, const packet_meta_event& eve
 
 // Mostly a debugging helper. Production report writing should use
 // append_event_jsonl() and choose its own output sink/buffering policy.
-export void print_event_jsonl(const packet_meta_event& event) {
+export
+force_inline_
+void print_event_jsonl(const packet_meta_event& event) {
     std::array<char, 10240> line{};
     auto remaining = append_event_jsonl(std::span<char>{line}, event);
     const auto used = line.size() - remaining.size();

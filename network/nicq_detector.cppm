@@ -14,6 +14,7 @@ class nic_queue_detector {
 public:
     explicit nic_queue_detector(std::string ifname) : interface_name_(std::move(ifname)) {}
 
+    [[nodiscard]]
     std::optional<std::uint32_t> detect_queues() const {
         // 1. Try Ethtool first (The source of truth for high-end NICs)
         if (const auto count = ethtool_queue_detector::get_queue_count(interface_name_)) {

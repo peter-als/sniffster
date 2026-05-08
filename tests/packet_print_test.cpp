@@ -25,8 +25,8 @@ sniffster::packet_meta_event make_base_event(std::uint16_t eth_proto_host) {
 
     const std::array<std::uint8_t, ETH_ALEN> src_mac{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
     const std::array<std::uint8_t, ETH_ALEN> dst_mac{0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
-    std::copy(src_mac.begin(), src_mac.end(), event.packet_identity.src_mac);
-    std::copy(dst_mac.begin(), dst_mac.end(), event.packet_identity.dst_mac);
+    std::ranges::copy(src_mac, event.packet_identity.src_mac);
+    std::ranges::copy(dst_mac, event.packet_identity.dst_mac);
     return event;
 }
 
@@ -36,8 +36,8 @@ TEST(PacketPrintJsonl, FormatsIpv4JsonLine) {
 
     const std::array<std::uint8_t, 4> src_ip{192, 168, 1, 10};
     const std::array<std::uint8_t, 4> dst_ip{10, 0, 0, 5};
-    std::copy(src_ip.begin(), src_ip.end(), event.packet_identity.src_ip.data());
-    std::copy(dst_ip.begin(), dst_ip.end(), event.packet_identity.dst_ip.data());
+    std::ranges::copy(src_ip, event.packet_identity.src_ip.data());
+    std::ranges::copy(dst_ip, event.packet_identity.dst_ip.data());
 
     std::string line;
     sniffster::append_event_jsonl(line, event);
@@ -46,14 +46,13 @@ TEST(PacketPrintJsonl, FormatsIpv4JsonLine) {
     const auto latest_ts = event.latest_timestamp.time_since_epoch().count();
     const std::string expected =
         std::format(
-            "{{\"cpu\": 3, \"q\": 7, \"sample_len\": 128, \"l2_type\": \"0x800\", "
-            "\"l2_name\": \"IPv4\", \"coalesced\": 4, \"mac_src\": \"aa:bb:cc:dd:ee:ff\", "
-            "\"mac_dst\": \"00:11:22:33:44:55\", \"l3_type\": \"IPv4\", "
-            "\"ip_src\": \"192.168.1.10\", \"ip_dst\": \"10.0.0.5\", "
-            "\"l4_proto\": 6, \"l4_name\": \"TCP\", \"first_ts\": {}, "
-            "\"latest_ts\": {}}}\n",
+            R"json({{"cpu": 3, "q": 7, "sample_len": 128, "l2_type": "0x800",)json"
+            R"json( "l2_name": "IPv4", "coalesced": 4, "mac_src": "aa:bb:cc:dd:ee:ff",)json"
+            R"json( "mac_dst": "00:11:22:33:44:55", "l3_type": "IPv4",)json"
+            R"json( "ip_src": "192.168.1.10", "ip_dst": "10.0.0.5",)json"
+            R"json( "l4_proto": 6, "l4_name": "TCP", "first_ts": {}, "latest_ts": {}}})json",
             first_ts,
-            latest_ts);
+            latest_ts) + '\n';
 
     EXPECT_EQ(line, expected);
 }
@@ -66,18 +65,18 @@ TEST(PacketPrintJsonl, FormatsIpv6JsonLine) {
         0x20, 0x01, 0x0D, 0xB8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
     const std::array<std::uint8_t, 16> dst_ip{
         0x20, 0x01, 0x0D, 0xB8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2};
-    std::copy(src_ip.begin(), src_ip.end(), event.packet_identity.src_ip.data());
-    std::copy(dst_ip.begin(), dst_ip.end(), event.packet_identity.dst_ip.data());
+    std::ranges::copy(src_ip, event.packet_identity.src_ip.data());
+    std::ranges::copy(dst_ip, event.packet_identity.dst_ip.data());
 
     std::string line;
     sniffster::append_event_jsonl(line, event);
 
-    EXPECT_NE(line.find("\"l2_name\": \"IPv6\""), std::string::npos);
-    EXPECT_NE(line.find("\"l3_type\": \"IPv6\""), std::string::npos);
-    EXPECT_NE(line.find("\"ip_src\": \"2001:db8::1\""), std::string::npos);
-    EXPECT_NE(line.find("\"ip_dst\": \"2001:db8::2\""), std::string::npos);
-    EXPECT_NE(line.find("\"l4_proto\": 58"), std::string::npos);
-    EXPECT_NE(line.find("\"l4_name\": \"ICMPv6\""), std::string::npos);
+    EXPECT_NE(line.find(R"("l2_name": "IPv6")"), std::string::npos);
+    EXPECT_NE(line.find(R"("l3_type": "IPv6")"), std::string::npos);
+    EXPECT_NE(line.find(R"("ip_src": "2001:db8::1")"), std::string::npos);
+    EXPECT_NE(line.find(R"("ip_dst": "2001:db8::2")"), std::string::npos);
+    EXPECT_NE(line.find(R"("l4_proto": 58)"), std::string::npos);
+    EXPECT_NE(line.find(R"("l4_name": "ICMPv6")"), std::string::npos);
     ASSERT_FALSE(line.empty());
     EXPECT_EQ(line.back(), '\n');
 }
@@ -87,16 +86,16 @@ TEST(PacketPrintJsonl, FormatsArpWithoutL4Fields) {
 
     const std::array<std::uint8_t, 4> src_ip{192, 168, 1, 10};
     const std::array<std::uint8_t, 4> dst_ip{10, 0, 0, 5};
-    std::copy(src_ip.begin(), src_ip.end(), event.packet_identity.src_ip.data());
-    std::copy(dst_ip.begin(), dst_ip.end(), event.packet_identity.dst_ip.data());
+    std::ranges::copy(src_ip, event.packet_identity.src_ip.data());
+    std::ranges::copy(dst_ip, event.packet_identity.dst_ip.data());
 
     std::string line;
     sniffster::append_event_jsonl(line, event);
 
-    EXPECT_NE(line.find("\"l2_name\": \"ARP\""), std::string::npos);
-    EXPECT_NE(line.find("\"l3_type\": \"ARP\""), std::string::npos);
-    EXPECT_EQ(line.find("\"l4_proto\""), std::string::npos);
-    EXPECT_EQ(line.find("\"l4_name\""), std::string::npos);
+    EXPECT_NE(line.find(R"("l2_name": "ARP")"), std::string::npos);
+    EXPECT_NE(line.find(R"("l3_type": "ARP")"), std::string::npos);
+    EXPECT_EQ(line.find(R"("l4_proto")"), std::string::npos);
+    EXPECT_EQ(line.find(R"("l4_name")"), std::string::npos);
 }
 
 TEST(PacketPrintJsonl, FormatsUnknownEtherTypeWithoutL2Name) {
@@ -105,9 +104,9 @@ TEST(PacketPrintJsonl, FormatsUnknownEtherTypeWithoutL2Name) {
     std::string line;
     sniffster::append_event_jsonl(line, event);
 
-    EXPECT_NE(line.find("\"l2_type\": \"0x1234\""), std::string::npos);
-    EXPECT_EQ(line.find("\"l2_name\""), std::string::npos);
-    EXPECT_NE(line.find("\"l3_type\": \"Unknown\""), std::string::npos);
+    EXPECT_NE(line.find(R"("l2_type": "0x1234")"), std::string::npos);
+    EXPECT_EQ(line.find(R"("l2_name")"), std::string::npos);
+    EXPECT_NE(line.find(R"("l3_type": "Unknown")"), std::string::npos);
 }
 
 } // namespace

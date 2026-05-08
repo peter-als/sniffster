@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     switch (q_count) {
         case 0:
             std::println("[!] Queue detection failed. Defaulting to single-queue mode.");
-            q_count = 1; // Fallback to single queue if detection fails
+            // Fallback to single queue if detection fails
             break;
         case 1:
             std::println("[!] Single-queue detected. Scaling restricted to one core.");

@@ -13,10 +13,10 @@ int main() {
     std::println("{:#x}", addr.to_uint());
 
     uint8_t bytes_array[4] = {0xFF, 0x00, 0x00, 0x00};
-    uint32_t value = std::bit_cast<uint32_t>(bytes_array);
+    auto value = std::bit_cast<uint32_t>(bytes_array);
     std::println("{:#x}", value);
 
     // Need to test if bytes are not aligned.
-    uint32_t value2 = *reinterpret_cast<uint32_t*>(bytes_array);
+    auto value2 = *reinterpret_cast<uint32_t*>(bytes_array);
     std::println("{:#x}", value2);
 }

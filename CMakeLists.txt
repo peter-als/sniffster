@@ -292,28 +292,7 @@ PRIVATE
 target_sources(sniffster
 PRIVATE
 FILE_SET CXX_MODULES FILES
-    platform/arch_detect.cppm
-    platform/decorated_throw.cppm
-    platform/debug.cppm
-    platform/platform.cppm
     sniffer/sniffer.cppm
-    sniffer/runtime_control.cppm
-    sniffer/threading_config.cppm
-    processors/format_data.cppm
-    processors/queue_processor.cppm
-    processors/packet_processor.cppm
-    processors/packet_print.cppm
-    processors/logger_processor.cppm
-    processors/packet_meta_event.cppm
-    processors/logger_event.cppm
-    ${SNIFFER_XDPCOPY_LOADER_MODULE}
-    sniffer/packet_handler.cppm
-    sniffer/xdp_copy_handler.cppm
-    network/addresses.cppm
-    network/config.cppm
-    network/nicq_detector.cppm
-    network/nicq_ethtool.cppm
-    network/nicq_fs.cppm
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -342,6 +321,7 @@ pkg_check_modules(ZLIB REQUIRED zlib)
 
 
 find_package(Boost REQUIRED COMPONENTS program_options filesystem log log_setup)
+find_package(Threads REQUIRED)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BPF object and skeleton generation
@@ -400,6 +380,184 @@ set_source_files_properties(${SNIFFER_XDPCOPY_LOADER_MODULE} PROPERTIES
     OBJECT_DEPENDS "${SNIFFER_XDPCOPY_SKELETON}"
 )
 
+function(sniffster_add_module_library target)
+    add_library(${target} STATIC)
+    target_link_libraries(${target}
+        PUBLIC
+        Threads::Threads
+    )
+    target_sources(${target}
+        PUBLIC
+        FILE_SET CXX_MODULES
+        BASE_DIRS ${CMAKE_SOURCE_DIR}
+        FILES
+            ${ARGN}
+    )
+    target_include_directories(${target}
+        PUBLIC
+        ${CMAKE_SOURCE_DIR}
+    )
+endfunction()
+
+function(sniffster_enable_boost_log_compilation target)
+    target_compile_definitions(${target}
+        PRIVATE
+        BOOST_ATOMIC_DYN_LINK
+        BOOST_ATOMIC_NO_LIB
+        BOOST_CHRONO_DYN_LINK
+        BOOST_CHRONO_NO_LIB
+        BOOST_FILESYSTEM_DYN_LINK
+        BOOST_FILESYSTEM_NO_LIB
+        BOOST_LOG_DYN_LINK
+        BOOST_LOG_NO_LIB
+        BOOST_LOG_SETUP_DYN_LINK
+        BOOST_LOG_SETUP_NO_LIB
+        BOOST_PROGRAM_OPTIONS_DYN_LINK
+        BOOST_PROGRAM_OPTIONS_NO_LIB
+        BOOST_REGEX_DYN_LINK
+        BOOST_REGEX_NO_LIB
+        BOOST_THREAD_DYN_LINK
+        BOOST_THREAD_NO_LIB
+    )
+endfunction()
+
+sniffster_add_module_library(sniffster_platform_modules
+    ${CMAKE_SOURCE_DIR}/platform/arch_detect.cppm
+    ${CMAKE_SOURCE_DIR}/platform/decorated_throw.cppm
+    ${CMAKE_SOURCE_DIR}/platform/debug.cppm
+    ${CMAKE_SOURCE_DIR}/platform/platform.cppm
+)
+
+sniffster_add_module_library(sniffster_addresses_modules
+    ${CMAKE_SOURCE_DIR}/network/addresses.cppm
+)
+
+sniffster_add_module_library(sniffster_config_modules
+    ${CMAKE_SOURCE_DIR}/network/config.cppm
+)
+target_link_libraries(sniffster_config_modules
+    PUBLIC
+    sniffster_addresses_modules
+    sniffster_platform_modules
+)
+
+sniffster_add_module_library(sniffster_network_misc_modules
+    ${CMAKE_SOURCE_DIR}/network/nicq_ethtool.cppm
+    ${CMAKE_SOURCE_DIR}/network/nicq_fs.cppm
+    ${CMAKE_SOURCE_DIR}/network/nicq_detector.cppm
+)
+
+sniffster_add_module_library(sniffster_format_modules
+    ${CMAKE_SOURCE_DIR}/processors/format_data.cppm
+)
+target_link_libraries(sniffster_format_modules
+    PUBLIC
+    sniffster_platform_modules
+)
+
+sniffster_add_module_library(sniffster_runtime_modules
+    ${CMAKE_SOURCE_DIR}/sniffer/runtime_control.cppm
+)
+
+sniffster_add_module_library(sniffster_packet_meta_modules
+    ${CMAKE_SOURCE_DIR}/processors/packet_meta_event.cppm
+)
+target_link_libraries(sniffster_packet_meta_modules
+    PUBLIC
+    sniffster_addresses_modules
+    sniffster_platform_modules
+)
+
+sniffster_add_module_library(sniffster_packet_print_modules
+    ${CMAKE_SOURCE_DIR}/processors/packet_print.cppm
+)
+target_link_libraries(sniffster_packet_print_modules
+    PUBLIC
+    sniffster_addresses_modules
+    sniffster_format_modules
+    sniffster_packet_meta_modules
+    sniffster_platform_modules
+)
+
+sniffster_add_module_library(sniffster_queue_modules
+    ${CMAKE_SOURCE_DIR}/processors/queue_processor.cppm
+)
+target_link_libraries(sniffster_queue_modules
+    PUBLIC
+    sniffster_platform_modules
+    sniffster_runtime_modules
+)
+
+sniffster_add_module_library(sniffster_logger_modules
+    ${CMAKE_SOURCE_DIR}/processors/logger_event.cppm
+    ${CMAKE_SOURCE_DIR}/processors/logger_processor.cppm
+)
+target_link_libraries(sniffster_logger_modules
+    PUBLIC
+    sniffster_packet_meta_modules
+    sniffster_platform_modules
+    sniffster_queue_modules
+    Boost::log
+)
+sniffster_enable_boost_log_compilation(sniffster_logger_modules)
+
+sniffster_add_module_library(sniffster_packet_processor_modules
+    ${CMAKE_SOURCE_DIR}/processors/packet_processor.cppm
+)
+target_link_libraries(sniffster_packet_processor_modules
+    PUBLIC
+    sniffster_logger_modules
+    sniffster_packet_print_modules
+    sniffster_platform_modules
+    sniffster_queue_modules
+)
+
+sniffster_add_module_library(sniffster_packet_handler_modules
+    ${CMAKE_SOURCE_DIR}/sniffer/packet_handler.cppm
+)
+target_include_directories(sniffster_packet_handler_modules
+    PRIVATE
+    ${LIBBPF_INCLUDE_DIRS}
+)
+target_link_libraries(sniffster_packet_handler_modules
+    PUBLIC
+    sniffster_logger_modules
+    sniffster_packet_print_modules
+    sniffster_packet_processor_modules
+    sniffster_platform_modules
+)
+
+sniffster_add_module_library(sniffster_xdp_copy_handler_modules
+    ${CMAKE_SOURCE_DIR}/sniffer/xdp_copy_handler.cppm
+)
+target_include_directories(sniffster_xdp_copy_handler_modules
+    PRIVATE
+    ${LIBBPF_INCLUDE_DIRS}
+)
+target_link_libraries(sniffster_xdp_copy_handler_modules
+    PUBLIC
+    sniffster_format_modules
+    sniffster_packet_handler_modules
+    sniffster_platform_modules
+    sniffster_runtime_modules
+)
+
+sniffster_add_module_library(sniffster_xdp_loader_modules
+    ${CMAKE_SOURCE_DIR}/sniffer/threading_config.cppm
+    ${SNIFFER_XDPCOPY_LOADER_MODULE}
+)
+target_include_directories(sniffster_xdp_loader_modules
+    PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${LIBBPF_INCLUDE_DIRS}
+)
+target_link_libraries(sniffster_xdp_loader_modules
+    PUBLIC
+    sniffster_config_modules
+    sniffster_platform_modules
+)
+add_dependencies(sniffster_xdp_loader_modules sniffer_xdpcopy)
+
 add_dependencies(sniffster sniffer_xdpcopy)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -407,6 +565,15 @@ add_dependencies(sniffster sniffer_xdpcopy)
 # ─────────────────────────────────────────────────────────────────────────────
 
 target_link_libraries(sniffster PRIVATE
+    sniffster_config_modules
+    sniffster_logger_modules
+    sniffster_network_misc_modules
+    sniffster_platform_modules
+    sniffster_runtime_modules
+    sniffster_xdp_loader_modules
+    sniffster_xdp_copy_handler_modules
+    sniffster_packet_handler_modules
+    sniffster_packet_processor_modules
     Boost::program_options
     Boost::filesystem
     Boost::log

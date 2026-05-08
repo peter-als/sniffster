@@ -42,6 +42,7 @@ public:
     xdp_copy_mode_loader(xdp_copy_mode_loader&&) = delete;
     xdp_copy_mode_loader& operator=(xdp_copy_mode_loader&&) = delete;
 
+    [[nodiscard]]
     int perf_map_fd() const {
         if (!is_loaded_ || !skel_) {
             platform::throw_runtime_error("xdp_copy_mode_loader is not loaded");
@@ -109,7 +110,7 @@ private:
         is_loaded_ = false;
     }
 
-    network_interface interface_;
+    const network_interface& interface_;
     uint32_t attached_flags_ = 0;
     bool is_attached_ = false;
     bool is_loaded_ = false;

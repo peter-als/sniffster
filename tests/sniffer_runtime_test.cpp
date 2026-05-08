@@ -147,7 +147,7 @@ std::vector<std::uint8_t> make_perf_sample_event(const std::vector<std::uint8_t>
     header->misc = 0;
     header->size = static_cast<std::uint16_t>(bytes.size());
 
-    const std::uint32_t raw_size = static_cast<std::uint32_t>(sample_bytes.size());
+    const auto raw_size = static_cast<std::uint32_t>(sample_bytes.size());
     std::memcpy(bytes.data() + sizeof(perf_event_header), &raw_size, sizeof(raw_size));
     std::memcpy(bytes.data() + sizeof(perf_event_header) + sizeof(raw_size),
                 sample_bytes.data(),
@@ -287,13 +287,13 @@ TEST_F(SnifferRuntimeTest, SampleCallbackWritesJsonlThroughProcessorPipeline) {
 
     const auto lines = read_lines(report_file.path());
     ASSERT_EQ(lines.size(), 10u);
-    EXPECT_NE(lines.front().find("\"cpu\": 3"), std::string::npos);
-    EXPECT_NE(lines.front().find("\"q\": 7"), std::string::npos);
-    EXPECT_NE(lines.front().find("\"l2_name\": \"IPv4\""), std::string::npos);
-    EXPECT_NE(lines.front().find("\"ip_src\": \"192.168.1.1\""), std::string::npos);
-    EXPECT_NE(lines.front().find("\"ip_dst\": \"10.0.0.101\""), std::string::npos);
-    EXPECT_NE(lines.front().find("\"l4_name\": \"TCP\""), std::string::npos);
-    EXPECT_NE(lines.front().find("\"coalesced\": 1"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("cpu": 3)"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("q": 7)"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("l2_name": "IPv4")"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("ip_src": "192.168.1.1")"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("ip_dst": "10.0.0.101")"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("l4_name": "TCP")"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("coalesced": 1)"), std::string::npos);
 }
 
 } // namespace

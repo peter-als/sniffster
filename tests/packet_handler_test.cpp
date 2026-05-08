@@ -196,9 +196,9 @@ TEST_F(PacketHandlerTest, CoalescesRepeatedPacketsBeforeTheyReachProcessorOutput
 
     const auto lines = read_lines(report_file.path());
     ASSERT_EQ(lines.size(), 10u);
-    EXPECT_NE(lines.front().find("\"coalesced\": 2"), std::string::npos);
-    EXPECT_NE(lines.front().find("\"ip_src\": \"192.168.1.1\""), std::string::npos);
-    EXPECT_NE(lines.front().find("\"ip_dst\": \"10.0.1.101\""), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("coalesced": 2)"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("ip_src": "192.168.1.1")"), std::string::npos);
+    EXPECT_NE(lines.front().find(R"("ip_dst": "10.0.1.101")"), std::string::npos);
 }
 
 TEST_F(PacketHandlerTest, ReportsDroppedOutboundEventsWhenProcessorQueueOverflows) {

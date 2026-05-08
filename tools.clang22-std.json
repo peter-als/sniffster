@@ -1,0 +1,24 @@
+{
+  "version": 6,
+  "vendor": {
+    "sniffster": {
+      "lint_tool": "/usr/bin/clang-tidy-22",
+      "tidy_tool": "/usr/bin/clang-tidy-22",
+      "format_tool": "/usr/bin/clang-format-22",
+      "_SNIFFSTER_BOOST_ROOT": "Copy SNIFFSTER_BOOST_ROOT into cacheVariables to pin a Boost prefix."
+    }
+  },
+  "configurePresets": [
+    {
+      "name": "sniffster-tools",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/clang-22",
+        "CMAKE_CXX_COMPILER": "/usr/bin/clang++-22",
+        "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "/usr/bin/clang-scan-deps-22",
+        "SNIFFSTER_CXX_STDLIB": "libstdc++",
+        "SNIFFSTER_GCC_INSTALL_DIR": "/usr/lib/gcc/x86_64-linux-gnu/14"
+      }
+    }
+  ]
+}

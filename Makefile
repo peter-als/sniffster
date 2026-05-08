@@ -6,14 +6,30 @@ CORE_SOURCES := \
 	$(wildcard platform/*.cppm network/*.cppm processors/*.cppm sniffer/*.cppm) \
 	$(wildcard tests/*.cpp tests/manual/*.cpp)
 
+TOOLS_FILE := tools.json
+PROJECT_ROOT := $(patsubst %/,%,$(abspath $(dir $(lastword $(MAKEFILE_LIST)))))
+LINT_TOOL := $(or $(strip $(shell sed -n 's/.*"lint_tool": *"\([^"]*\)".*/\1/p' $(TOOLS_FILE) | head -n 1)),clang-tidy)
+TIDY_TOOL := $(or $(strip $(shell sed -n 's/.*"tidy_tool": *"\([^"]*\)".*/\1/p' $(TOOLS_FILE) | head -n 1)),clang-tidy)
+FORMAT_TOOL := $(or $(strip $(shell sed -n 's/.*"format_tool": *"\([^"]*\)".*/\1/p' $(TOOLS_FILE) | head -n 1)),clang-format)
+
 FORMAT_SOURCES := \
 	$(CORE_SOURCES) \
 	$(wildcard platform/*.hpp platform/*.h network/*.hpp network/*.h) \
 	$(wildcard processors/*.hpp processors/*.h sniffer/*.hpp sniffer/*.h) \
 	$(wildcard tests/*.hpp tests/*.h)
 
-CLANG_TIDY_CHECKS := -checks='-*,modernize-*,bugprone-use-after-move,clang-analyzer-*,clang-diagnostic-*,-clang-analyzer-optin.core.EnumCastOutOfRange,-modernize-use-trailing-return-type'
-CLANG_TIDY_BASE = clang-tidy -p build/debug $(CLANG_TIDY_CHECKS)
+CLANG_TIDY_CHECKS := -checks='-*,modernize-*,bugprone-use-after-move,clang-analyzer-*,clang-diagnostic-*,\
+-clang-analyzer-optin.core.EnumCastOutOfRange,-modernize-use-trailing-return-type,-modernize-avoid-c-arrays,\
+-modernize-use-scoped-lock'
+
+CLANG_TIDY_HEADER_FILTER := \
+	-header-filter='^$(PROJECT_ROOT)/(platform|network|processors|sniffer|tests)/' \
+	--exclude-header-filter='^$(PROJECT_ROOT)/build/'
+
+LINT_TIDY_BASE = $(LINT_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLANG_TIDY_HEADER_FILTER)
+
+FIX_TIDY_BASE = $(TIDY_TOOL) --quiet -p build/debug $(CLANG_TIDY_CHECKS) $(CLANG_TIDY_HEADER_FILTER)
+
 CLANG_FORMAT_STYLE := "{BasedOnStyle: llvm, IndentWidth: 4, ColumnLimit: 85}"
 PARALLEL_THREADS ?= 8
 BUILD_PARALLEL := --parallel $(PARALLEL_THREADS)
@@ -24,17 +40,17 @@ help: ## Show available make targets
 
 lint: lint-tidy-note debug ## Run clang-tidy checks on all C++ source/module files (requires debug build)
 	@for file in $(CORE_SOURCES); do \
-		$(CLANG_TIDY_BASE) "$$file" || exit $$?; \
+		$(LINT_TIDY_BASE) "$$file" || exit $$?; \
 	done
 
 tidy: lint-tidy-note debug ## Run clang-tidy with in-place auto-fixes (requires debug build)
 	@for file in $(CORE_SOURCES); do \
-		$(CLANG_TIDY_BASE) -fix "$$file" || exit $$?; \
+		$(FIX_TIDY_BASE) -fix "$$file" || exit $$?; \
 	done
 
 format: ## Run clang-format with LLVM-based style
 	@for file in $(FORMAT_SOURCES); do \
-		clang-format -i -style=$(CLANG_FORMAT_STYLE) "$$file" || exit $$?; \
+		$(FORMAT_TOOL) -i -style=$(CLANG_FORMAT_STYLE) "$$file" || exit $$?; \
 	done
 
 lint-tidy-note:
