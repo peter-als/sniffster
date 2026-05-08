@@ -21,8 +21,8 @@ export namespace sniffster {
 
 class xdp_copy_mode_loader {
 public:
-    explicit xdp_copy_mode_loader(const network_interface& interface) :
-            interface_(interface) {
+    explicit xdp_copy_mode_loader(network_interface interface) :
+            interface_(std::move(interface)) {
         try {
             load_bpf();
             attach_bpf_to_nic();
@@ -110,7 +110,7 @@ private:
         is_loaded_ = false;
     }
 
-    const network_interface& interface_;
+    const network_interface interface_;
     uint32_t attached_flags_ = 0;
     bool is_attached_ = false;
     bool is_loaded_ = false;
